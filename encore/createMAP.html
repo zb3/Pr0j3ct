@@ -1,0 +1,79 @@
+<body style="color: black;">
+    <canvas id="canvas"></canvas>
+    <script>
+        var tileSize = 160;
+        var ringSize = 20;
+
+        var files = [['japko.jpg', 0.9, '#474d02'],
+            ['czery.png', 1, '#520000'],
+            ['wino.png', 1, '#2b1d47'],
+            ['ananas.png', 1, '#734f1a'],
+            ['banany.png', 0.9, '#696100']];
+
+
+        //preload stuff
+        var loaded = 0;
+        for (var t = 0; t < files.length; t++)
+        {
+            files[t][3] = new Image();
+            files[t][3].onload = function ()
+            {
+                loaded++;
+
+                if (loaded === files.length)
+                    letsGo();
+            }
+            files[t][3].src = files[t][0];
+        }
+
+        var ctx = canvas.getContext('2d');
+        canvas.height = tileSize;
+        canvas.width = files.length * 2 * tileSize;
+
+
+        function letsGo()
+        {
+            for (var t = 0; t < files.length; t++)
+            {
+                ctx.fillStyle = files[t][2];
+                ctx.beginPath();
+                ctx.arc(2 * t * tileSize + tileSize / 2, tileSize / 2, tileSize / 2 - 2, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(2 * t * tileSize + tileSize / 2, tileSize / 2, tileSize / 2 - ringSize / 2, 0, 2 * Math.PI);
+                ctx.fill();
+
+                var r = (tileSize / 2 - ringSize / 2) * files[t][1];
+
+                var icx = 2 * t * tileSize + tileSize / 2 - r / Math.sqrt(2), icy = tileSize / 2 - r / Math.sqrt(2);
+
+                ctx.drawImage(files[t][3], icx, icy, Math.sqrt(2) * r, Math.sqrt(2) * r);
+            }
+
+            //now apply transforms
+            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var pixels = imgData.data;
+
+            var fact = 0.91;
+            for (var t = 0; t < pixels.length; t += tileSize * 2 * 4)
+            {
+                for (var p = 0; p < tileSize * 4; p += 4)
+                {
+                    var npv = Math.min(pixels[t + p] * .3 + pixels[t + p + 1] * .59 + pixels[t + p + 2] * .11 + 63, 255);
+                    var r = Math.random();
+
+
+                    pixels[tileSize * 4 + t + p] = fact * npv + (1 - fact) * pixels[t + p] - 31
+                    pixels[tileSize * 4 + t + p + 1] = fact * npv + (1 - fact) * pixels[t + p + 1] - 31
+                    pixels[tileSize * 4 + t + p + 2] = fact * npv + (1 - fact) * pixels[t + p + 2] - 31
+                    pixels[tileSize * 4 + t + p + 3] = pixels[t + p + 3]
+
+                }
+            }
+
+            ctx.putImageData(imgData, 0, 0);
+
+        }
+    </script>
