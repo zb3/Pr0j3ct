@@ -11,10 +11,10 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -26,7 +26,7 @@ import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
 public class Pr0j3ctComponent extends javax.swing.JComponent
-        implements ActionListener, MouseListener, ComponentListener {
+        implements ActionListener {
 
     public static final int NUM_TYPES = 5;
     public static final int TILE_SIZE = 80;
@@ -34,7 +34,7 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
     public static final int FRAME_EVERY = 20;
     public static final double GEN_PROB = 0.03;
     public static final double GEN_PROB_PER_MINUTE = 0.01;
-    
+
     private Timer timer;
     private ArrayList<ShootTarget> objects;
     private int[] dim;
@@ -64,9 +64,20 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
         if (getWidth() != 0 || getHeight() != 0) {
             initSize(getWidth(), getHeight());
         }
-        
-        this.addMouseListener(this);
-        this.addComponentListener(this);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent me) {
+                onMousePressed(me);
+            }
+        });
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                onComponentResized(e);
+            }
+        });
     }
 
     //this must be called
@@ -92,9 +103,9 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
     }
 
     private void maybeAddObject() {
-        if (objects.isEmpty() || Math.random() < (GEN_PROB + 
-                    GEN_PROB_PER_MINUTE*((double)(System.currentTimeMillis()
-                    -gameStartTime)/60000))) {
+        if (objects.isEmpty() || Math.random() < (GEN_PROB
+                + GEN_PROB_PER_MINUTE * ((double) (System.currentTimeMillis()
+                - gameStartTime) / 60000))) {
             objects.add(new ShootTarget(dim));
         }
     }
@@ -137,12 +148,7 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
         nextFrame();
     }
 
-    @Override
-    public void mouseClicked(MouseEvent me) {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent me) {
+    public void onMousePressed(MouseEvent me) {
         if (over) {
             return;
         }
@@ -157,23 +163,9 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
         }
 
         am.playShootSound();
-
     }
 
-    @Override
-    public void mouseReleased(MouseEvent me) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent me) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent me) {
-    }
-
-    @Override
-    public void componentResized(ComponentEvent ce) {
+    public void onComponentResized(ComponentEvent ce) {
         if (!over) {
             setOver();
         }
@@ -181,18 +173,6 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
         initSize(getWidth(), getHeight());
 
         repaint();
-    }
-
-    @Override
-    public void componentMoved(ComponentEvent ce) {
-    }
-
-    @Override
-    public void componentShown(ComponentEvent ce) {
-    }
-
-    @Override
-    public void componentHidden(ComponentEvent ce) {
     }
 
     @Override
