@@ -49,7 +49,7 @@ public class Pr0j3ctComponent extends javax.swing.JComponent
     private long gameStartTime;
 
     public Pr0j3ctComponent() {
-        am = new AudioManager();
+        am = AudioManager.createInstance();
         timer = new Timer(FRAME_EVERY, this);
         objects = new ArrayList<>();
         setupCrosshair();
